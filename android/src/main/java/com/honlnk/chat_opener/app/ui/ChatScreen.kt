@@ -67,10 +67,11 @@ import kotlin.math.abs
 
 private const val COLLAPSE_THRESHOLD = 1200
 
-/** 气泡配色（亮/暗 × 用户/AI 四套），标记与高亮色随气泡底色适配 */
+/** 气泡配色（亮/暗 × 用户/AI 四套），标记与高亮色随气泡底色适配。
+ *  字段用 Long：0xFFxxxxxx 形态的字面量超过 Int.MAX_VALUE，本身就是 Long */
 private data class BubblePalette(
-    val userBg: Int, val userContent: Int, val userItalic: Int, val userCode: Int, val userHi: Int,
-    val aiBg: Int, val aiContent: Int, val aiItalic: Int, val aiCode: Int, val aiHi: Int
+    val userBg: Long, val userContent: Long, val userItalic: Long, val userCode: Long, val userHi: Long,
+    val aiBg: Long, val aiContent: Long, val aiItalic: Long, val aiCode: Long, val aiHi: Long
 )
 
 private val LightPalette = BubblePalette(
@@ -486,4 +487,4 @@ private fun StatsRow(label: String, value: String) {
 private fun formatChars(n: Long): String =
     if (n >= 10000) String.format(Locale.CHINA, "%.1f 万字", n / 10000.0) else "$n 字"
 
-private fun Int.c() = androidx.compose.ui.graphics.Color(this)
+private fun Long.c() = androidx.compose.ui.graphics.Color(toInt())
