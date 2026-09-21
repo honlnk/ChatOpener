@@ -75,3 +75,10 @@
 - push main 触发构建（assembleRelease + testReleaseUnitTest 门禁），
   Release published 时自动挂 `ChatOpener-<tag>.apk` + `ChatOpener-latest.apk`
 - 验收标准：CI 绿、Release 资产可下载、`latest` 直链 200
+
+### 2026-09-21 ③ 首轮构建修复（施工日志）
+
+- 第一次 CI 红：`BubblePalette` 字段声明 Int，`0xFFxxxxxx` 字面量超 Int.MAX 实为 Long，
+  16 处类型不匹配。修复：字段与 `c()` 扩展改 Long。教训记档：
+  **零本地 SDK 环境下，Compose 颜色字面量赋给自定义 Int 字段是静态审读盲区，颜色容器一律 Long**。
+- 第二次 CI 绿：编译 + 9 例单测 + 签名打包全通过（run 35623794977）
