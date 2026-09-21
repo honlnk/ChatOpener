@@ -1,0 +1,71 @@
+name: Build APK
+
+# 触发：
+# 1. push 到 main / dev 且安卓相关路径有改动（本机无 Android SDK，所有构建验证依赖 CI）。
+# 2. 在 GitHub 上发布 Release（published）时触发。
+#    构建后自动把 APK 以 ChatOpener-<tag>.apk 与 ChatOpener-latest.apk 两个名字
+#    附到该 Release——发版时只需写好说明点发布，无需手动上传 APK。
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'android/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write  # release 事件时上传资产需要写权限
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-read-only: false
+
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/chatopener-release.keystore"
+
+      - name: Build release APK + unit tests
+        env:
+          KEYSTORE_FILE: ${{ runner.temp }}/chatopener-release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: gradle assembleRelease testReleaseUnitTest --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: chat-opener-apk
+          path: android/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Attach APKs to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          cd android/build/outputs/apk/release
+          cp android-release.apk "ChatOpener-${TAG}.apk"
+          cp android-release.apk ChatOpener-latest.apk
+          gh release upload "$TAG" "ChatOpener-${TAG}.apk" ChatOpener-latest.apk --clobber

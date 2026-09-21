@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 肉桂底 + 暖纸对话气泡 + 三个消息点。
+         与 MD Opener 图标同一视觉语言（100 视窗图形经 1.08 等比放大铺满 108 画布） -->
+    <path android:fillColor="#A65A2E" android:pathData="M0,0h108v108H0z" />
+    <group android:scaleX="1.08" android:scaleY="1.08">
+        <path
+            android:fillColor="#FBF8F1"
+            android:pathData="M30,24 H70 Q76,24 76,30 V54 Q76,60 70,60 H48 L38,70 V60 H30 Q24,60 24,54 V30 Q24,24 30,24 Z" />
+        <path android:fillColor="#A65A2E" android:pathData="M35.5,42 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z" />
+        <path android:fillColor="#A65A2E" android:pathData="M46.5,42 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z" />
+        <path android:fillColor="#A65A2E" android:pathData="M57.5,42 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 Z" />
+    </group>
+</vector>
