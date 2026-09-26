@@ -65,6 +65,12 @@ android {
             includeAndroidResources = true
             all {
                 it.useJUnit()
+                // 诊断轮：输出测试 stdout/完整堆栈（Robolectric 语义树 dump 依赖此配置进 CI 日志）
+                it.testLogging {
+                    events 'failed'
+                    showStandardStreams = true
+                    exceptionFormat 'full'
+                }
             }
         }
     }
