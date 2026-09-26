@@ -1,6 +1,7 @@
 package com.honlnk.chat_opener.app.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -467,18 +469,18 @@ private fun Bubble(msg: ChatMessage, query: String, isDark: Boolean, fontSizeSp:
                 lineHeight = (fontSizeSp * 1.5f).sp
             )
             if (collapsible) {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    contentPadding = PaddingValues(0.dp),
-                    modifier = Modifier.padding(top = 2.dp)
-                ) {
-                    Text(
-                        if (effExpanded && !queryHit) stringResource(R.string.collapse)
-                        else stringResource(R.string.expand_full, msg.text.length),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = (if (user) palette.userCode else palette.aiCode).c()
-                    )
-                }
+                // 不用 M3 TextButton（其内部是可点击 Surface，1.7.1 触摸回归的嫌疑层），
+                // 基础 clickable + Role.Button 保住无障碍语义；内层 padding 计入触摸区
+                Text(
+                    if (effExpanded && !queryHit) stringResource(R.string.collapse)
+                    else stringResource(R.string.expand_full, msg.text.length),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = (if (user) palette.userCode else palette.aiCode).c(),
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .clickable(role = Role.Button) { expanded = !expanded }
+                        .padding(vertical = 4.dp, horizontal = 2.dp)
+                )
             }
         }
     }

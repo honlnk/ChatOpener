@@ -108,3 +108,19 @@ AppRoot 去 onSettings 传参、strings.xml 4 条新串、build.gradle 版本号
 
 - 代码与文档同批完成，见上文范围
 - 验证：无本地 Android SDK，编译/单测门禁交 CI（与 v1.0.0 同一工作法）
+
+### 2026-09-26 ② 修复批 v1.1.1——「展开全文」点击无反应（真机反馈）
+
+- **症状**（用户真机复现）：折叠消息的「展开全文」按钮点击无任何反应，内容展不开
+- **静态排查结论**：Bubble 的展开状态逻辑（rememberSaveable + effExpanded + remember 键）
+  本身推演正确；嫌疑锁定环境因素
+- **根因定位**（高概率）：compose BOM 2024.09.00（ui 1.7.1）存在 LazyColumn 区域触摸派发
+  回归（issuetracker 365802571 家族：升级到该 BOM 后 LazyColumn 内/附近组件收不到触摸），
+  本项目 BOM 完全吻合、症状吻合（滚动正常、点击失效）
+- **修复（双管齐下，本机无模拟器无法逐项 bisect，一轮覆盖高概率原因）**：
+  1. BOM 2024.09.00 → 2024.12.01（ui 1.7.6 / material3 1.3.1，同 1.7.x 修复线，compileSdk 34 兼容）
+  2. 展开控件 M3 TextButton → 基础 Text + clickable(role = Role.Button)，
+     规避 M3 可点击 Surface 层叠（另一嫌疑层），视觉不变、触摸区含 4dp 内边距
+- **偏差声明**：根因未经本地复现验证（环境限制），按证据强度做的推断修复；需用户真机复验，
+  若仍无效下一步排查方向：触摸坐标偏移（edge-to-edge insets）、R8 影响面
+- versionCode 3 / versionName 1.1.1
