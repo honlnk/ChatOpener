@@ -153,4 +153,10 @@ AppRoot 去 onSettings 传参、strings.xml 4 条新串、build.gradle 版本号
   3. 测试基建：robolectric 4.14.1 + ui-test-junit4/ui-test-manifest，includeAndroidResources
 - **后手（若真机仍无效）**：优先查 edge-to-edge（setDecorFitsSystemWindows(false)）在
   用户机型上的触摸区域偏移——需用户提供 Android 版本与机型；其次本地搭模拟器复现
+- **首轮 CI 修复（施工日志）**：两个新测试挂在 `RoboMonitoringInstrumentation` 的
+  RuntimeException（Activity 启动失败包装）。根因：`createComposeRule()` 需要清单里的
+  ComponentActivity（由 ui-test-manifest 合并提供），但 testImplementation 的清单不合并进
+  被测变体，官方配方是 debugImplementation；而 CI 跑的 testReleaseUnitTest 用 release 变体，
+  两者都够不着。修复：ui-test-manifest → debugImplementation，CI 单测改跑
+  testDebugUnitTest（纯 JVM 测试与变体无关）。教训记档：**变体与测试依赖的合并范围要一起想**。
 - versionCode 5 / versionName 1.2.1

@@ -92,5 +92,8 @@ dependencies {
     // 展开全文交互的 JVM 级 UI 回归测试（真实 Compose 布局 + 命中测试）
     testImplementation 'org.robolectric:robolectric:4.14.1'
     testImplementation 'androidx.compose.ui:ui-test-junit4'
-    testImplementation 'androidx.compose.ui:ui-test-manifest'
+    // createComposeRule() 依赖清单里的 ComponentActivity；testImplementation 的清单不会
+    // 合并进被测变体，必须走 debugImplementation 让 manifest 合并（Compose 官方配方），
+    // 因此 CI 的单测跑 testDebugUnitTest
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
 }
