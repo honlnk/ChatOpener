@@ -466,15 +466,23 @@ private fun Bubble(msg: ChatMessage, query: String, isDark: Boolean, fontSizeSp:
             bottomEnd = if (user) 4.dp else 16.dp
         )
     ) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 14.dp, vertical = 10.dp)
+                .then(
+                    // 折叠态整块气泡可点开：真机上小标签点击无反应的防御性放大触摸区
+                    if (collapsible && !effExpanded) {
+                        Modifier.clickable(role = Role.Button) { expanded = true }
+                    } else Modifier
+                )
+        ) {
             Text(
                 annotated,
                 fontSize = fontSizeSp.sp,
                 lineHeight = (fontSizeSp * 1.5f).sp
             )
             if (collapsible) {
-                // 不用 M3 TextButton（其内部是可点击 Surface，1.7.1 触摸回归的嫌疑层），
-                // 基础 clickable + Role.Button 保住无障碍语义；内层 padding 计入触摸区
+                // 底部标签：展开态下是唯一的收起入口（避免整块点按与选中文本冲突）
                 Text(
                     if (effExpanded && !queryHit) stringResource(R.string.collapse)
                     else stringResource(R.string.expand_full, msg.text.length),

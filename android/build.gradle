@@ -12,8 +12,8 @@ android {
         applicationId 'com.honlnk.chat_opener.app'
         minSdk 24
         targetSdk 34
-        versionCode 4
-        versionName '1.2.0'
+        versionCode 5
+        versionName '1.2.1'
     }
 
     // release 签名：CI 注入 KEYSTORE_FILE/KEYSTORE_PASSWORD/KEY_ALIAS 时使用固定发布密钥，
@@ -60,8 +60,12 @@ android {
     }
 
     testOptions {
-        unitTests.all {
-            it.useJUnit()
+        unitTests {
+            // Robolectric 跑 Compose UI 测试需要合并资源与 Manifest
+            includeAndroidResources = true
+            all {
+                it.useJUnit()
+            }
         }
     }
 }
@@ -85,4 +89,8 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1'
 
     testImplementation 'junit:junit:4.13.2'
+    // 展开全文交互的 JVM 级 UI 回归测试（真实 Compose 布局 + 命中测试）
+    testImplementation 'org.robolectric:robolectric:4.14.1'
+    testImplementation 'androidx.compose.ui:ui-test-junit4'
+    testImplementation 'androidx.compose.ui:ui-test-manifest'
 }
