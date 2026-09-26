@@ -17,8 +17,6 @@
     <string name="font_size">字号</string>
     <string name="show_timestamps">显示消息时间</string>
     <string name="show_system_messages">显示系统/旁白消息</string>
-    <string name="expand_full">展开全文（共 %1$,d 字）</string>
-    <string name="collapse">收起</string>
     <string name="read_error">无法读取该文件\n可能来源不支持或文件已被移动</string>
     <string name="parse_error">未找到聊天消息\n这可能不是酒馆（SillyTavern / Tavo）导出的 .jsonl 聊天记录</string>
     <string name="retry">重试</string>

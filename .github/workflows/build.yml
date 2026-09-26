@@ -49,7 +49,7 @@ jobs:
           KEYSTORE_FILE: ${{ runner.temp }}/chatopener-release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        run: gradle assembleRelease testDebugUnitTest --no-daemon
+        run: gradle assembleRelease testReleaseUnitTest --no-daemon
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7

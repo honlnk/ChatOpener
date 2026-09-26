@@ -1,7 +1,6 @@
 package com.honlnk.chat_opener.app.ui
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,12 +45,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -68,8 +65,6 @@ import com.honlnk.chat_opener.app.ui.components.CompactTopAppBar
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.abs
-
-private const val COLLAPSE_THRESHOLD = 1200
 
 /** 气泡配色（亮/暗 × 用户/AI 四套），标记与高亮色随气泡底色适配。
  *  字段用 Long：0xFFxxxxxx 形态的字面量超过 Int.MAX_VALUE，本身就是 Long */
@@ -443,18 +438,9 @@ private fun Bubble(msg: ChatMessage, query: String, isDark: Boolean, fontSizeSp:
     val palette = if (isDark) DarkPalette else LightPalette
     val user = msg.isUser
 
-    // 搜索命中的消息强制展开，否则跳转过去可能看不到高亮位置
-    val queryHit = query.isNotEmpty() && msg.text.contains(query, ignoreCase = true)
-    var expanded by rememberSaveable(msg.index) { mutableStateOf(false) }
-    val effExpanded = expanded || queryHit
-    val collapsible = msg.text.length > COLLAPSE_THRESHOLD
-    val displayText =
-        if (collapsible && !effExpanded) msg.text.substring(0, COLLAPSE_THRESHOLD) + "……"
-        else msg.text
-
-    val annotated: AnnotatedString = remember(msg.index, effExpanded, isDark, query) {
-        if (user) InlineMarkup.build(displayText, query, palette.userItalic.c(), palette.userCode.c(), palette.userHi.c())
-        else InlineMarkup.build(displayText, query, palette.aiItalic.c(), palette.aiCode.c(), palette.aiHi.c())
+    val annotated: AnnotatedString = remember(msg.index, isDark, query) {
+        if (user) InlineMarkup.build(msg.text, query, palette.userItalic.c(), palette.userCode.c(), palette.userHi.c())
+        else InlineMarkup.build(msg.text, query, palette.aiItalic.c(), palette.aiCode.c(), palette.aiHi.c())
     }
 
     Surface(
@@ -466,34 +452,13 @@ private fun Bubble(msg: ChatMessage, query: String, isDark: Boolean, fontSizeSp:
             bottomEnd = if (user) 4.dp else 16.dp
         )
     ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 14.dp, vertical = 10.dp)
-                .then(
-                    // 折叠态整块气泡可点开：真机上小标签点击无反应的防御性放大触摸区
-                    if (collapsible && !effExpanded) {
-                        Modifier.clickable(role = Role.Button) { expanded = true }
-                    } else Modifier
-                )
-        ) {
+        // 消息全量展示（v1.3.0 起折叠功能整体移除，用户拍板）
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
             Text(
                 annotated,
                 fontSize = fontSizeSp.sp,
                 lineHeight = (fontSizeSp * 1.5f).sp
             )
-            if (collapsible) {
-                // 底部标签：展开态下是唯一的收起入口（避免整块点按与选中文本冲突）
-                Text(
-                    if (effExpanded && !queryHit) stringResource(R.string.collapse)
-                    else stringResource(R.string.expand_full, msg.text.length),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = (if (user) palette.userCode else palette.aiCode).c(),
-                    modifier = Modifier
-                        .padding(top = 2.dp)
-                        .clickable(role = Role.Button) { expanded = !expanded }
-                        .padding(vertical = 4.dp, horizontal = 2.dp)
-                )
-            }
         }
     }
 }

@@ -159,4 +159,17 @@ AppRoot 去 onSettings 传参、strings.xml 4 条新串、build.gradle 版本号
   被测变体，官方配方是 debugImplementation；而 CI 跑的 testReleaseUnitTest 用 release 变体，
   两者都够不着。修复：ui-test-manifest → debugImplementation，CI 单测改跑
   testDebugUnitTest（纯 JVM 测试与变体无关）。教训记档：**变体与测试依赖的合并范围要一起想**。
-- versionCode 5 / versionName 1.2.1
+- versionCode 5 / versionName 1.2.1（**未发布**——CI 红在展开断言上，测试反证逻辑层复现）
+
+### 2026-09-27 ⑤ 决策——折叠功能整体移除（用户拍板）
+
+- **背景**：v1.2.1 诊断轮的 ChatScreenExpandTest 在 JVM 上复现了真机症状（点击展开无效果，
+  两条路径全挂），证明是代码层 bug 而非设备触摸问题；但根因静态排查 + 两轮修复 + 阶梯复现
+  均未定位。用户拍板：**这个功能测试不好就不要了，全量删除，消息直接全量展示**
+- **删除面**：COLLAPSE_THRESHOLD / Bubble 的 expanded-effExpanded-displayText 状态组 /
+  展开收起标签与整块 clickable / strings（expand_full、collapse）/ 两个展开测试文件 /
+  Robolectric 测试基建（robolectric、ui-test-junit4、ui-test-manifest、includeAndroidResources、
+  testLogging）/ CI 回到 testReleaseUnitTest
+- **已知代价（用户知悉）**：v1.0.0 数据画像里 P95 ≤1531 字、最长 5255 字（>2000 字整文件 <40 条），
+  全量排版在极长消息上可能掉帧；LazyColumn 虚拟化仍保证列表整体流畅
+- versionCode 6 / versionName 1.3.0
