@@ -17,15 +17,16 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.GpsFixed
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -92,7 +94,6 @@ fun ChatScreen(
     fontSizeSp: Int,
     showTimestamps: Boolean,
     showSystemMessages: Boolean,
-    onSettings: () -> Unit,
     onRetry: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -106,7 +107,7 @@ fun ChatScreen(
             }
         }
         doc.error || doc.parseError || log == null -> ErrorView(doc, onRetry, onClose)
-        else -> ChatList(doc, log, isDark, fontSizeSp, showTimestamps, showSystemMessages, onSettings, onClose)
+        else -> ChatList(doc, log, isDark, fontSizeSp, showTimestamps, showSystemMessages, onClose)
     }
 }
 
@@ -147,7 +148,6 @@ private fun ChatList(
     fontSizeSp: Int,
     showTimestamps: Boolean,
     showSystemMessages: Boolean,
-    onSettings: () -> Unit,
     onClose: () -> Unit
 ) {
     val listState = rememberLazyListState()
@@ -156,6 +156,7 @@ private fun ChatList(
     var query by remember { mutableStateOf("") }
     var hitPos by remember { mutableStateOf(-1) }
     var showStats by remember { mutableStateOf(false) }
+    var showJump by remember { mutableStateOf(false) }
 
     val renderList = remember(log, showSystemMessages) {
         if (showSystemMessages) log.messages else log.messages.filter { !it.isSystem }
@@ -222,8 +223,9 @@ private fun ChatList(
                         IconButton(onClick = { showStats = true }) {
                             Icon(Icons.Filled.Info, stringResource(R.string.stats))
                         }
-                        IconButton(onClick = onSettings) {
-                            Icon(Icons.Filled.Settings, stringResource(R.string.settings))
+                        // 设置入口只在首页；预览页这个位置留给条数跳转
+                        IconButton(onClick = { showJump = true }) {
+                            Icon(Icons.Filled.GpsFixed, stringResource(R.string.jump_to))
                         }
                     }
                 )
@@ -280,6 +282,44 @@ private fun ChatList(
     if (showStats) {
         StatsDialog(log = log, fileName = doc.name, onDismiss = { showStats = false })
     }
+
+    if (showJump) {
+        // 编号口径与顶栏「第 X/N 条」一致：当前渲染列表（系统消息可能已被过滤）的 1-based 位置
+        JumpDialog(
+            total = renderList.size,
+            onJump = { n -> showJump = false; jumpTo(renderList[n - 1].index) },
+            onDismiss = { showJump = false }
+        )
+    }
+}
+
+@Composable
+private fun JumpDialog(total: Int, onJump: (Int) -> Unit, onDismiss: () -> Unit) {
+    var text by remember { mutableStateOf("") }
+    val n = text.toIntOrNull()
+    val valid = n != null && n in 1..total
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.jump_to)) },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { raw -> text = raw.filter { it.isDigit() }.take(6) },
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.jump_input_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                supportingText = { Text(stringResource(R.string.jump_range, total, total)) }
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { if (n != null) onJump(n) }, enabled = valid) {
+                Text(stringResource(R.string.jump_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        }
+    )
 }
 
 @Composable

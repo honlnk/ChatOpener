@@ -31,6 +31,11 @@
     <string name="stats_range">起止时间</string>
     <string name="stats_file">文件</string>
     <string name="search_no_hit">无结果</string>
+    <string name="jump_to">跳转到指定条数</string>
+    <string name="jump_input_hint">输入消息条数</string>
+    <string name="jump_range">共 %1$,d 条，可输入 1–%2$,d</string>
+    <string name="jump_confirm">跳转</string>
+    <string name="cancel">取消</string>
     <string name="loading">正在载入…</string>
     <string name="system_message">系统消息</string>
 </resources>

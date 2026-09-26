@@ -57,7 +57,6 @@ fun AppRoot(vm: MainViewModel) {
             fontSizeSp = fontSizeSp,
             showTimestamps = showTimestamps,
             showSystemMessages = showSystemMessages,
-            onSettings = { showSettings = true },
             onRetry = { cur.uri?.let { vm.openUri(context, it, cur.external) } },
             onClose = vm::closeCurrent
         )
