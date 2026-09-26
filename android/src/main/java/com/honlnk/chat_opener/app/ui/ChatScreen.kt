@@ -271,6 +271,7 @@ private fun ChatList(
             itemsIndexed(renderList, key = { _, m -> "m${m.index}" }, contentType = { _, _ -> "msg" }) { idx, msg ->
                 MessageRow(
                     msg = msg,
+                    number = idx + 1,
                     prevDayText = if (idx > 0) renderList[idx - 1].dayText else null,
                     query = trimmedQuery,
                     isDark = isDark,
@@ -369,6 +370,7 @@ private fun SearchRow(
 @Composable
 private fun MessageRow(
     msg: ChatMessage,
+    number: Int,
     prevDayText: String?,
     query: String,
     isDark: Boolean,
@@ -392,7 +394,8 @@ private fun MessageRow(
 
         if (msg.isSystem) {
             Text(
-                msg.text,
+                // 系统消息也编号：内联前缀，保证可见序列连续不断档
+                "#$number · ${msg.text}",
                 style = MaterialTheme.typography.bodySmall,
                 fontStyle = FontStyle.Italic,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -412,6 +415,7 @@ private fun MessageRow(
                     modifier = Modifier.fillMaxWidth(0.86f)
                 ) {
                     val meta = buildString {
+                        append("#$number · ")
                         append(msg.sender ?: if (msg.isUser) "我" else "AI")
                         if (showTimestamps && msg.timeText != null) append(" · ${msg.timeText}")
                     }
